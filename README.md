@@ -1,10 +1,10 @@
-# OpenCode Sandbox for Windows with Podman
+# OpenCode Sandbox for Windows
 
-Run OpenCode in a sandboxed container environment on Windows using Podman. This project provides a secure, isolated development environment that protects your host system from potential issues while working with AI-assisted coding tools.
+Run OpenCode in a sandboxed container environment on Windows using Podman or Docker. This project provides a secure, isolated development environment that protects your host system from potential issues while working with AI-assisted coding tools.
 
 ## What is This?
 
-This project allows you to run [OpenCode](https://opencode.ai) (an AI coding assistant CLI) inside a Podman container on Windows. The container is configured with security best practices and includes all necessary dependencies:
+This project allows you to run [OpenCode](https://opencode.ai) (an AI coding assistant CLI) inside a container on Windows. The container is configured with security best practices and includes all necessary dependencies:
 
 - Python 3.13
 - OpenCode CLI
@@ -24,17 +24,24 @@ Running OpenCode in a container provides:
 ## Prerequisites
 
 - **Windows** (Windows 10/11 or Windows Server)
-- **Podman Desktop** or **Podman CLI** installed
-  - Download from: https://podman.io/getting-started/installation
+- **Podman** or **Docker** installed (Podman is preferred)
+  - Podman: https://podman.io/getting-started/installation
+  - Docker Desktop: https://www.docker.com/products/docker-desktop
 - **PowerShell** (pre-installed on Windows)
 
 ## Installation
 
 1. Clone or download this repository
-2. Build the container image:
+2. Build the container image using Podman or Docker:
 
+**With Podman:**
 ```bash
 podman build -t opencode-sandbox:latest .
+```
+
+**With Docker:**
+```bash
+docker build -t opencode-sandbox:latest .
 ```
 
 This will create a container image with all dependencies pre-installed.
@@ -58,14 +65,15 @@ This works from any shell (CMD, PowerShell, Git Bash, etc.) as long as the scrip
 
 When you run the script:
 
-1. Creates/removes any existing container for the current project
-2. Starts a new Podman container with:
+1. Detects available container runtime (prefers Podman, falls back to Docker)
+2. Creates/removes any existing container for the current project
+3. Starts a new container with:
    - Your current directory mounted as `/workspace`
    - Security restrictions applied
    - Host timezone configured
-   - Serena MCP server running on port 9121
-3. Launches OpenCode interactively inside the container
-4. Automatically cleans up the container when you exit
+   - Serena MCP server running
+4. Launches OpenCode interactively inside the container
+5. Automatically cleans up the container when you exit
 
 ### Advanced Usage
 
@@ -114,19 +122,17 @@ The container runs with enhanced security:
 
 ## Troubleshooting
 
+### Neither Podman nor Docker found
+
+If you see an error about missing container runtime, ensure either Podman or Docker is installed and available in your PATH.
+
 ### Container fails to start
 
-Check if Podman is running:
+Check if your container runtime is running:
 ```bash
 podman ps
-```
-
-### Port 9121 already in use
-
-Another Serena instance may be running. Stop other containers:
-```bash
-podman ps -a
-podman rm -f <container-name>
+# or
+docker ps
 ```
 
 ### Timezone warnings
@@ -145,6 +151,7 @@ Ensure the project directory is accessible and not protected by Windows security
 4. **opencode-sandbox**: Bash wrapper for Git Bash/WSL environments
 
 The PowerShell script handles:
+- Container runtime detection (Podman preferred, Docker as fallback)
 - Container creation and cleanup
 - Volume mounting for project files and configs
 - Timezone synchronization

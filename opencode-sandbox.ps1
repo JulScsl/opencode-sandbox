@@ -9,6 +9,19 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Detect container runtime (prefer Podman over Docker)
+$containerRuntime = $null
+if (Get-Command podman -ErrorAction SilentlyContinue) {
+    $containerRuntime = "podman"
+    Write-Host "Using Podman as container runtime"
+} elseif (Get-Command docker -ErrorAction SilentlyContinue) {
+    $containerRuntime = "docker"
+    Write-Host "Using Docker as container runtime"
+} else {
+    Write-Error "Neither Podman nor Docker found. Please install one of them."
+    exit 1
+}
+
 # Get host timezone and convert to IANA format
 $hostTz = Get-TimeZone
 $ianaId = $null
@@ -53,18 +66,18 @@ if (-not (Test-Path $configPath)) {
 }
 
 # Check if container exists
-$existing = podman ps -a --filter "name=^${ContainerName}$" --format "{{.Names}}"
+$existing = & $containerRuntime ps -a --filter "name=^${ContainerName}$" --format "{{.Names}}"
 
 if ($existing) {
     Write-Host "Removing existing container: $ContainerName"
-    podman rm -f $ContainerName | Out-Null
+    & $containerRuntime rm -f $ContainerName | Out-Null
 }
 
 # Create new container
 Write-Host "Creating new container: $ContainerName"
 Write-Host "Project path: $ProjectPath"
 
-podman run -d `
+& $containerRuntime run -d `
     --name $ContainerName `
     --network bridge `
     --security-opt no-new-privileges `
@@ -84,7 +97,7 @@ podman run -d `
 $maxAttempts = 50
 $attempt = 0
 while ($attempt -lt $maxAttempts) {
-    $state = podman inspect -f '{{.State.Running}}' $ContainerName 2>$null
+    $state = & $containerRuntime inspect -f '{{.State.Running}}' $ContainerName 2>$null
     if ($state -eq "true") {
         break
     }
@@ -98,13 +111,13 @@ if ($attempt -eq $maxAttempts) {
 }
 
 Write-Host "Starting Serena MCP server..."
-podman exec -d $ContainerName serena start-mcp-server --context claude-code --transport streamable-http --port 9121 | Out-Null
+& $containerRuntime exec -d $ContainerName serena start-mcp-server --context claude-code --transport streamable-http --port 9121 | Out-Null
 
 Write-Host "`Attaching to OpenCode in container...`n"
 
 # Start OpenCode interactively
-podman exec -it $ContainerName opencode
+& $containerRuntime exec -it $ContainerName opencode
 
 # Cleanup
 Write-Host "`Removing container..."
-podman rm -f -t 0 $ContainerName | Out-Null
+& $containerRuntime rm -f -t 0 $ContainerName | Out-Null
