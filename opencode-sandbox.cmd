@@ -1,0 +1,1 @@
+@pwsh -NoProfile -ExecutionPolicy Bypass -File "%~dp0opencode-sandbox.ps1" %*
