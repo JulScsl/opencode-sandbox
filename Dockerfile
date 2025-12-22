@@ -19,6 +19,9 @@ ENV PATH="/root/.local/bin:$PATH"
 # Configure uv to use .venv-opencode instead of .venv
 ENV UV_PROJECT_ENVIRONMENT=.venv-opencode
 
+# Install Prettier globally
+RUN npm install -g prettier
+
 # Install OpenCode
 RUN curl -fsSL https://opencode.ai/install | bash
 ENV PATH="/root/.opencode/bin:$PATH"
@@ -29,6 +32,7 @@ RUN echo "Checking installations..." \
     && (npm --version > /dev/null 2>&1 && echo "✓ npm installed" || echo "✗ npm not installed") \
     && (python --version > /dev/null 2>&1 && echo "✓ python installed" || echo "✗ python not installed") \
     && (uv --version > /dev/null 2>&1 && echo "✓ uv installed" || echo "✗ uv not installed") \
+    && (prettier --version > /dev/null 2>&1 && echo "✓ prettier installed" || echo "✗ prettier not installed") \
     && (opencode --version > /dev/null 2>&1 && echo "✓ opencode installed" || echo "✗ opencode not installed")
 
 # Download Serena via uvx to reduce container start-up time
