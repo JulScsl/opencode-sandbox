@@ -34,6 +34,9 @@ RUN echo "Checking installations..." \
 # Download Serena via uvx to reduce container start-up time
 RUN uvx --from git+https://github.com/oraios/serena serena start-mcp-server --help > /dev/null 2>&1 && echo "✓ serena cached with uvx" || echo "✗ caching serena with uvx failed"
 
+# Configure git with safe directory for mounted workspace
+RUN git config --global --add safe.directory '/workspace'
+
 WORKDIR /workspace
 
 # Keep container running
