@@ -8,7 +8,7 @@ This project allows you to run [OpenCode](https://opencode.ai) (an AI coding ass
 
 - Python 3.13
 - OpenCode CLI
-- Serena MCP, an MCP server that provides powerful code navigation, symbol-aware editing, and intelligent refactoring capabilities
+- Serena MCP server (pre-cached with uvx for faster startup)
 - npm with npx to run additional MCP servers
 - uv with uvx to run additional MCP servers
 
@@ -71,7 +71,8 @@ When you run the script:
    - Your current directory mounted as `/workspace`
    - Security restrictions applied
    - Host timezone configured
-   - Serena MCP server running
+   - Serena MCP tools available via OpenCode
+   - Serena dashboard accessible at http://localhost:24282/dashboard/index.html
 4. Launches OpenCode interactively inside the container
 5. Automatically cleans up the container when you exit
 
@@ -88,6 +89,22 @@ pwsh opencode-sandbox.ps1 -ImageName "custom-image:tag" -ContainerName "my-sandb
 - `ContainerName`: Name for the container (default: `opencode-sandbox-<current-folder>`)
 - `ProjectPath`: Path to mount as workspace (default: current directory)
 
+### Serena Dashboard
+
+While using OpenCode, Serena's web dashboard is accessible at:
+
+```
+http://localhost:24282/dashboard/index.html
+```
+
+The dashboard provides:
+- Detailed information about your Serena session
+- Current configuration settings
+- Access to logs
+- Ability to modify some settings (e.g., active programming languages)
+
+This is useful for monitoring Serena's activity and troubleshooting issues.
+
 ## Configuration
 
 ### OpenCode Configuration
@@ -95,7 +112,7 @@ pwsh opencode-sandbox.ps1 -ImageName "custom-image:tag" -ContainerName "my-sandb
 The first time you run the script, it creates a configuration file at:
 
 ```
-%USERPROFILE%\.opencode-sandbox\config\config.json
+%USERPROFILE%\.config\opencode\config.json
 ```
 
 This config enables the Serena MCP integration automatically.
@@ -104,9 +121,9 @@ This config enables the Serena MCP integration automatically.
 
 The following directories/volumes are used for persistence:
 
-- `%USERPROFILE%\.opencode-sandbox\config` - OpenCode configuration
-- `%USERPROFILE%\.opencode-sandbox\appdata` - Application data
-- `opencode-sandbox-cache` - Podman volume for cache files
+- `%USERPROFILE%\.config\opencode` - OpenCode configuration (mounted from host)
+- `%USERPROFILE%\.local\share\opencode` - Application data (mounted from host)
+- `opencode-sandbox-cache` - Container volume for cache files
 
 Your project files in the workspace are directly mounted, so all changes are immediately reflected on your host system.
 
@@ -143,9 +160,16 @@ If timezone conversion fails, the container defaults to UTC. This doesn't affect
 
 Ensure the project directory is accessible and not protected by Windows security policies.
 
+### Dashboard not accessible
+
+If you cannot access the Serena dashboard at http://localhost:24282, ensure:
+- OpenCode is running and Serena has been initialized
+- Port 24282 is not blocked by your firewall
+- The container is still running (`podman ps` or `docker ps`)
+
 ## How It Works
 
-1. **Dockerfile**: Defines the container image with Python, Node.js, uv, OpenCode, and Serena
+1. **Dockerfile**: Defines the container image with Python, Node.js, uv, OpenCode, and Serena (cached via uvx)
 2. **opencode-sandbox.ps1**: PowerShell script that manages container lifecycle
 3. **opencode-sandbox.cmd**: Windows batch wrapper for easy execution
 4. **opencode-sandbox**: Bash wrapper for Git Bash/WSL environments
@@ -156,7 +180,7 @@ The PowerShell script handles:
 - Volume mounting for project files and configs
 - Timezone synchronization
 - Security configuration
-- Serena MCP server startup
+- OpenCode configuration (Serena MCP launched locally by OpenCode)
 - Interactive OpenCode session
 
 ## License
