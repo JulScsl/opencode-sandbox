@@ -67,6 +67,12 @@ if (-not (Test-Path $configPath)) {
                 enabled = $true
             }
         }
+        formatter = @{
+            prettier_markdown = @{
+                command = @("prettier", "--write", "`$FILE")
+                extensions = @(".md", ".mdx", ".markdown")
+            }
+        }
     } | ConvertTo-Json -Depth 10
 
     Set-Content -Path $configPath -Value $config

@@ -9,6 +9,7 @@ This project allows you to run [OpenCode](https://opencode.ai) (an AI coding ass
 - Python 3.13
 - OpenCode CLI
 - Serena MCP server (pre-cached with uvx for faster startup)
+- Prettier formatter (pre-configured for Markdown files)
 - npm with npx to run additional MCP servers
 - uv with uvx to run additional MCP servers
 
@@ -35,11 +36,13 @@ Running OpenCode in a container provides:
 2. Build the container image using Podman or Docker:
 
 **With Podman:**
+
 ```bash
 podman build -t opencode-sandbox:latest .
 ```
 
 **With Docker:**
+
 ```bash
 docker build -t opencode-sandbox:latest .
 ```
@@ -85,6 +88,7 @@ pwsh opencode-sandbox.ps1 -ImageName "custom-image:tag" -ContainerName "my-sandb
 ```
 
 **Parameters:**
+
 - `ImageName`: Container image to use (default: `opencode-sandbox:latest`)
 - `ContainerName`: Name for the container (default: `opencode-sandbox-<current-folder>`)
 - `ProjectPath`: Path to mount as workspace (default: current directory)
@@ -98,6 +102,7 @@ http://localhost:24282/dashboard/index.html
 ```
 
 The dashboard provides:
+
 - Detailed information about your Serena session
 - Current configuration settings
 - Access to logs
@@ -115,7 +120,12 @@ The first time you run the script, it creates a configuration file at:
 %USERPROFILE%\.config\opencode\config.json
 ```
 
-This config enables the Serena MCP integration automatically.
+This config includes:
+
+- **Serena MCP integration**: Automatically configured for local execution
+- **Prettier formatter**: Pre-configured to format Markdown files (`.md`, `.mdx`, `.markdown`)
+
+The Prettier formatter will automatically format your Markdown files when OpenCode writes or edits them.
 
 ### Persistent Storage
 
@@ -146,6 +156,7 @@ If you see an error about missing container runtime, ensure either Podman or Doc
 ### Container fails to start
 
 Check if your container runtime is running:
+
 ```bash
 podman ps
 # or
@@ -163,6 +174,7 @@ Ensure the project directory is accessible and not protected by Windows security
 ### Dashboard not accessible
 
 If you cannot access the Serena dashboard at http://localhost:24282, ensure:
+
 - OpenCode is running and Serena has been initialized
 - Port 24282 is not blocked by your firewall
 - The container is still running (`podman ps` or `docker ps`)
@@ -175,6 +187,7 @@ If you cannot access the Serena dashboard at http://localhost:24282, ensure:
 4. **opencode-sandbox**: Bash wrapper for Git Bash/WSL environments
 
 The PowerShell script handles:
+
 - Container runtime detection (Podman preferred, Docker as fallback)
 - Container creation and cleanup
 - Volume mounting for project files and configs
