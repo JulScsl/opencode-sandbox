@@ -23,17 +23,16 @@ ENV UV_PROJECT_ENVIRONMENT=.venv-opencode
 RUN curl -fsSL https://opencode.ai/install | bash
 ENV PATH="/root/.opencode/bin:$PATH"
 
-# Install Serena via uvx
-RUN uv tool install git+https://github.com/oraios/serena.git
-
 # Verify installations
 RUN echo "Checking installations..." \
     && (node --version > /dev/null 2>&1 && echo "✓ node installed" || echo "✗ node not installed") \
     && (npm --version > /dev/null 2>&1 && echo "✓ npm installed" || echo "✗ npm not installed") \
     && (python --version > /dev/null 2>&1 && echo "✓ python installed" || echo "✗ python not installed") \
     && (uv --version > /dev/null 2>&1 && echo "✓ uv installed" || echo "✗ uv not installed") \
-    && (opencode --version > /dev/null 2>&1 && echo "✓ opencode installed" || echo "✗ opencode not installed") \
-    && (serena --help > /dev/null 2>&1 && echo "✓ serena installed" || echo "✗ serena not installed")
+    && (opencode --version > /dev/null 2>&1 && echo "✓ opencode installed" || echo "✗ opencode not installed")
+
+# Download Serena via uvx to reduce container start-up time
+RUN uvx --from git+https://github.com/oraios/serena serena start-mcp-server --help > /dev/null 2>&1 && echo "✓ serena cached with uvx" || echo "✗ caching serena with uvx failed"
 
 WORKDIR /workspace
 

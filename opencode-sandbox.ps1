@@ -35,9 +35,9 @@ if ($success) {
     $containerTz = "UTC"
 }
 
-# Separate Paths für Container-Configs
-$ConfigDir = "$env:USERPROFILE\.opencode-sandbox\config"
-$AppDataDir = "$env:USERPROFILE\.opencode-sandbox\appdata"
+# Use host's OpenCode directories
+$ConfigDir = "$env:USERPROFILE\.config\opencode"
+$AppDataDir = "$env:USERPROFILE\.local\share\opencode"
 $CacheVolume = "opencode-sandbox-cache"
 
 # Ensure directories exist
@@ -54,8 +54,16 @@ if (-not (Test-Path $configPath)) {
         '$schema' = "https://opencode.ai/config.json"
         mcp = @{
             serena = @{
-                type = "remote"
-                url = "http://localhost:9121/mcp"
+                type = "local"
+                command = @(
+                    "uvx",
+                    "--from",
+                    "git+https://github.com/oraios/serena",
+                    "serena",
+                    "start-mcp-server",
+                    "--context",
+                    "claude-code"
+                )
                 enabled = $true
             }
         }
@@ -84,6 +92,7 @@ Write-Host "Project path: $ProjectPath"
     --cap-drop ALL `
     --cap-add CHOWN,DAC_OVERRIDE,SETGID,SETUID,FOWNER `
     -e TZ="${containerTz}" `
+    -p 24282:24282 `
     -v "${ProjectPath}:/workspace" `
     -v "${ConfigDir}:/root/.config/opencode" `
     -v "${CacheVolume}:/root/.cache/opencode" `
@@ -109,9 +118,6 @@ if ($attempt -eq $maxAttempts) {
     Write-Error "Container failed to start within timeout"
     exit 1
 }
-
-Write-Host "Starting Serena MCP server..."
-& $containerRuntime exec -d $ContainerName serena start-mcp-server --context claude-code --transport streamable-http --port 9121 | Out-Null
 
 Write-Host "`Attaching to OpenCode in container...`n"
 
