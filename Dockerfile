@@ -5,6 +5,9 @@ RUN apt update && apt install -y \
     curl \
     git \
     ca-certificates \
+    wget \
+    zip \
+    unzip \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js
