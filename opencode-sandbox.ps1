@@ -62,7 +62,11 @@ if (-not (Test-Path $configPath)) {
                     "serena",
                     "start-mcp-server",
                     "--context",
-                    "claude-code"
+                    "ide",
+                    "--project",
+                    "/workspace",
+                    "--host",
+                    "0.0.0.0"
                 )
                 enabled = $true
             }
