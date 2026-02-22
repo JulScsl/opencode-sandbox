@@ -28,7 +28,6 @@ Running OpenCode in a container provides:
 - **Podman** or **Docker** installed (Podman is preferred)
   - Podman: https://podman.io/getting-started/installation
   - Docker Desktop: https://www.docker.com/products/docker-desktop
-- **PowerShell** (pre-installed on Windows)
 
 ## Installation
 
@@ -181,7 +180,7 @@ If you cannot access the Serena dashboard at http://localhost:24282, ensure:
 
 ## How It Works
 
-1. **Dockerfile**: Defines the container image with Python, Node.js, uv, OpenCode, and Serena (cached via uvx)
+1. **Dockerfile**: Defines the container image with Python, Node.js, uv, OpenCode, and Serena (pre-pulled via uvx)
 2. **opencode-sandbox.ps1**: PowerShell script that manages container lifecycle
 3. **opencode-sandbox.cmd**: Windows batch wrapper for easy execution
 4. **opencode-sandbox**: Bash wrapper for Git Bash/WSL environments

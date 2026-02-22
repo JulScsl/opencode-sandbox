@@ -3,7 +3,7 @@
 
 param(
     [string]$ImageName = "opencode-sandbox:latest",
-    [string]$ContainerName = "opencode-sandbox-$(Split-Path -Leaf $PWD)",
+    [string]$ContainerName = "opencode-sandbox-$((Split-Path -Leaf $PWD) -replace '[^a-zA-Z0-9_.-]', '-')",
     [string]$ProjectPath = $PWD
 )
 
@@ -125,7 +125,7 @@ if ($attempt -eq $maxAttempts) {
     exit 1
 }
 
-Write-Host "`Attaching to OpenCode in container...`n"
+Write-Host "Attaching to OpenCode in container..."
 
 # Start OpenCode interactively
 & $containerRuntime exec -it $ContainerName opencode

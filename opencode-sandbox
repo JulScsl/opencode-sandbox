@@ -1,2 +1,6 @@
 #!/bin/bash
+if ! command -v pwsh.exe &> /dev/null; then
+    echo "Error: pwsh.exe not found. Please install PowerShell." >&2
+    exit 1
+fi
 pwsh.exe -NoProfile -ExecutionPolicy Bypass -File "$(dirname "$0")/opencode-sandbox.ps1" "$@"
