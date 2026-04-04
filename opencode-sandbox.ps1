@@ -11,13 +11,16 @@ $ErrorActionPreference = "Stop"
 
 # Detect container runtime (prefer Podman over Docker)
 $containerRuntime = $null
-if (Get-Command podman -ErrorAction SilentlyContinue) {
+if (Get-Command podman -ErrorAction SilentlyContinue)
+{
     $containerRuntime = "podman"
     Write-Host "Using Podman as container runtime"
-} elseif (Get-Command docker -ErrorAction SilentlyContinue) {
+} elseif (Get-Command docker -ErrorAction SilentlyContinue)
+{
     $containerRuntime = "docker"
     Write-Host "Using Docker as container runtime"
-} else {
+} else
+{
     Write-Error "Neither Podman nor Docker found. Please install one of them."
     exit 1
 }
@@ -27,10 +30,12 @@ $hostTz = Get-TimeZone
 $ianaId = $null
 $success = [System.TimeZoneInfo]::TryConvertWindowsIdToIanaId($hostTz.Id, [ref]$ianaId)
 
-if ($success) {
+if ($success)
+{
     Write-Host "Using timezone: $ianaId"
     $containerTz = $ianaId
-} else {
+} else
+{
     Write-Host "Warning: Could not convert timezone $($hostTz.Id), defaulting to UTC"
     $containerTz = "UTC"
 }
@@ -38,18 +43,21 @@ if ($success) {
 # Use host's OpenCode directories
 $ConfigDir = "$env:USERPROFILE\.config\opencode"
 $AppDataDir = "$env:USERPROFILE\.local\share\opencode"
+$UserProfileDir = "$env:USERPROFILE"
 $CacheVolume = "opencode-sandbox-cache"
 
 # Ensure directories exist
 @($ConfigDir, $AppDataDir) | ForEach-Object {
-    if (-not (Test-Path $_)) {
+    if (-not (Test-Path $_))
+    {
         New-Item -ItemType Directory -Path $_ -Force | Out-Null
     }
 }
 
 # Create OpenCode config if not exists
 $configPath = Join-Path $ConfigDir "config.json"
-if (-not (Test-Path $configPath)) {
+if (-not (Test-Path $configPath))
+{
     $config = @{
         '$schema' = "https://opencode.ai/config.json"
         mcp = @{
@@ -86,7 +94,8 @@ if (-not (Test-Path $configPath)) {
 # Check if container exists
 $existing = & $containerRuntime ps -a --filter "name=^${ContainerName}$" --format "{{.Names}}"
 
-if ($existing) {
+if ($existing)
+{
     Write-Host "Removing existing container: $ContainerName"
     & $containerRuntime rm -f $ContainerName | Out-Null
 }
@@ -107,24 +116,28 @@ Write-Host "Project path: $ProjectPath"
     -v "${ConfigDir}:/root/.config/opencode" `
     -v "${CacheVolume}:/root/.cache/opencode" `
     -v "${AppDataDir}:/root/.local/share/opencode" `
+    -v "${UserProfileDir}/.netrc:/root/.netrc" `
     -w /workspace `
     $ImageName `
     tail -f /dev/null `
-    | Out-Null
+| Out-Null
 
 # Poll until container is running (max 10 seconds)
 $maxAttempts = 50
 $attempt = 0
-while ($attempt -lt $maxAttempts) {
+while ($attempt -lt $maxAttempts)
+{
     $state = & $containerRuntime inspect -f '{{.State.Running}}' $ContainerName 2>$null
-    if ($state -eq "true") {
+    if ($state -eq "true")
+    {
         break
     }
     Start-Sleep -Milliseconds 200
     $attempt++
 }
 
-if ($attempt -eq $maxAttempts) {
+if ($attempt -eq $maxAttempts)
+{
     Write-Error "Container failed to start within timeout"
     exit 1
 }
