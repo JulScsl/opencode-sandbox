@@ -46,12 +46,16 @@ $AppDataDir = "$env:USERPROFILE\.local\share\opencode"
 $UserProfileDir = "$env:USERPROFILE"
 $CacheVolume = "opencode-sandbox-cache"
 
-# Ensure directories exist
+# Ensure directories and files that will be mounted exist
 @($ConfigDir, $AppDataDir) | ForEach-Object {
     if (-not (Test-Path $_))
     {
         New-Item -ItemType Directory -Path $_ -Force | Out-Null
     }
+}
+
+if (-not (Test-Path "$UserProfileDir/.netrc")) {
+    New-Item -ItemType File -Force -Path "$UserProfileDir/.netrc" | Out-Null
 }
 
 # Create OpenCode config if not exists
