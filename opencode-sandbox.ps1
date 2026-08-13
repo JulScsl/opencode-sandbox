@@ -9,6 +9,16 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# Derive stable port from project path
+function Get-StablePort {
+    param([string]$Path)
+    $hash = [System.Security.Cryptography.SHA256]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($Path))
+    $portNumber = ([BitConverter]::ToUInt32($hash, 0) % 60000) + 1024
+    return $portNumber
+}
+
+$ProjectPort = Get-StablePort $ProjectPath
+
 # Detect container runtime (prefer Podman over Docker)
 $containerRuntime = $null
 if (Get-Command podman -ErrorAction SilentlyContinue)
@@ -107,15 +117,20 @@ if ($existing)
 # Create new container
 Write-Host "Creating new container: $ContainerName"
 Write-Host "Project path: $ProjectPath"
+Write-Host "Assigned port: $ProjectPort"
 
 & $containerRuntime run -d `
     --name $ContainerName `
     --network bridge `
     --security-opt no-new-privileges `
     --cap-drop ALL `
-    --cap-add CHOWN,DAC_OVERRIDE,SETGID,SETUID,FOWNER `
+    --cap-add CHOWN `
+    --cap-add DAC_OVERRIDE `
+    --cap-add SETGID `
+    --cap-add SETUID `
+    --cap-add FOWNER `
     -e TZ="${containerTz}" `
-    -p 24282:24282 `
+    -p ${ProjectPort}:24282 `
     -v "${ProjectPath}:/workspace" `
     -v "${ConfigDir}:/root/.config/opencode" `
     -v "${CacheVolume}:/root/.cache/opencode" `
@@ -153,4 +168,4 @@ Write-Host "Attaching to OpenCode in container..."
 
 # Cleanup
 Write-Host "`Removing container..."
-& $containerRuntime rm -f -t 0 $ContainerName | Out-Null
+& $containerRuntime rm -f $ContainerName | Out-Null
