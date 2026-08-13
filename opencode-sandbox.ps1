@@ -13,7 +13,7 @@ $ErrorActionPreference = "Stop"
 function Get-StablePort {
     param([string]$Path)
     $hash = [System.Security.Cryptography.SHA256]::Create().ComputeHash([System.Text.Encoding]::UTF8.GetBytes($Path))
-    $portNumber = [BitConverter]::ToUInt32($hash, 0) % 60000
+    $portNumber = ([BitConverter]::ToUInt32($hash, 0) % 60000) + 1024
     return $portNumber
 }
 
